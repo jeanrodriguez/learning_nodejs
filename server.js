@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
 var middleware = require('./middleware.js')
 var app = express();
 var port = process.env.PORT || 3000;
@@ -62,12 +63,15 @@ app.get('/todos/:id',function(request,response){
 //POST /todos
 app.post('/todos',function(request,response){
     //get body form page,request.
-    var body = request.body;
-    //add id to todo Array
+    var body = _.pick(request.body,'description','completed') ;
+    
+    if(!_.isBoolean(body.completed) || !_.isString(body.description)){
+        return response.status(400).send();
+    }
+
     body.id = nextTodoId++;
-    //push  body into todo Array
+
     todos.push(body);
-    //nextTodoId++;
 
     response.json(body);
 })

@@ -1,8 +1,8 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var middleware = require('./middleware.js')
 var app = express();
 var port = process.env.PORT || 3000;
-
 
 //application middleware: se aplica middleware para toda la application
 //route middleware: se aplica middleware solo para una ruta especifica
@@ -16,6 +16,7 @@ var port = process.env.PORT || 3000;
 //global implementation
 //app.use(middleware.requireAuthentication)
 app.use(middleware.logger);
+app.use(bodyParser.json());
 
 //route implementation: pass as secound parameter middleware.requireAuthentication
 app.get('/About',middleware.requireAuthentication,function(req,res){
@@ -28,19 +29,8 @@ app.get('/About',middleware.requireAuthentication,function(req,res){
 //si no espacificamos la ruta por defecto toma index.html
 app.use(express.static(__dirname + '/public'))
 
-var todos = [{
-    id:1,
-    description:"Meet mom for lunch",
-    completed : false
-},{
-  id:2,
-  description:"Go to market",
-  completed:false
-},{
-    id:3,
-    description: "Call Jorge",
-    completed:true
-}];
+var todos = [];
+var nextTodoId = 1;
 
 app.get('/',function(req,res) {
     res.send('TODO API Root')
@@ -67,9 +57,20 @@ app.get('/todos/:id',function(request,response){
     }else{
         response.status(404).send()
     }
-
-    //response.send('asking for todo' + request.params.id)
 });
+
+//POST /todos
+app.post('/todos',function(request,response){
+    //get body form page,request.
+    var body = request.body;
+    //add id to todo Array
+    body.id = nextTodoId++;
+    //push  body into todo Array
+    todos.push(body);
+    //nextTodoId++;
+
+    response.json(body);
+})
 
 //puerto,
 app.listen(port,function() {

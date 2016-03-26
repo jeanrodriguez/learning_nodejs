@@ -78,17 +78,34 @@ app.post('/todos',function(request,response){
 
 //DELETE /todos/:idToDelete
 app.delete('/todos/:idToDelete',function(request,response) {
-    //use without
     var todoId = parseInt(request.params.idToDelete,10);
-    var machedTodo = _.findWhere(todos,{id:todoId});
+    //use without
+    var matchedTodo = _.findWhere(todos,{id:todoId});
     
-    if(!machedTodo){
+    if(!matchedTodo){
         response.status(404).json({"error": "no todo found with that id"});
     }
     else{
-         todos = _.without(todos,machedTodo); 
-         response.json(todos); 
+         todos = _.without(todos,matchedTodo); 
+         response.json(matchedTodo); 
     }    
+});
+
+//PUT /todos/:id
+app.put('/todos/:id',function(request,response) {
+    var todoId = parseInt(request.params.id,10);
+    var matchedRecord = _.findWhere(todos,{id:todoId});       
+    
+    if(!matchedRecord){
+        response.status(404).send();
+    }
+        var body = _.pick(request.body,'description','completed') ;
+    var validAtribute = {};
+    validAtribute.completed = body.completed;
+    validAtribute.description = body.description;
+    
+    _.extend(matchedRecord,validAtribute);
+    response.json(matchedRecord);
 });
 
 //puerto,

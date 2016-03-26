@@ -40,7 +40,7 @@ app.get('/',function(req,res) {
 //GET /todos
 app.get('/todos',function(req,res){
     res.json(todos);
-})
+});
 
 //GET /todos/:id = /todos/1
 app.get('/todos/:id',function(request,response){
@@ -74,24 +74,24 @@ app.post('/todos',function(request,response){
     todos.push(body);
 
     response.json(body);
-})
+});
 
 //DELETE /todos/:idToDelete
 app.delete('/todos/:idToDelete',function(request,response) {
     //use without
-    var todoId = parseInt(request.params.idToDelete)
-    var machedTodo = _.findwhere(todos,{id:todoId});
+    var todoId = parseInt(request.params.idToDelete,10);
+    var machedTodo = _.findWhere(todos,{id:todoId});
     
     if(!machedTodo){
-        response.status(404).json({"error": "no todo found with that id"})
+        response.status(404).json({"error": "no todo found with that id"});
     }
     else{
          todos = _.without(todos,machedTodo); 
          response.json(todos); 
     }    
-})
+});
 
 //puerto,
 app.listen(port,function() {
     console.log("Express server started on port : " + port)
-})
+});

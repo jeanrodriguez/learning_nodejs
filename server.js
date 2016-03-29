@@ -71,18 +71,17 @@ app.get('/todos',function(req,res){
 app.get('/todos/:id',function(request,response){
     
     var todoId = parseInt(request.params.id);
-    var todoEntity;
-    todos.forEach(function(todo) {
-        if(todo.id === todoId){
-            todoEntity = todo
+    var matchedTodo;
+    db.todo.findById(todoId).then(function(todo) {
+        if(todo){
+            matchedTodo = todo;
+            response.json(matchedTodo.toJSON());
+        }else{
+            response.status(404).send();
         }
+    },function(error){
+        response.status(500).send(error);
     });
-    if(todoEntity){
-        console.log(todoEntity);
-            response.json(todoEntity);
-    }else{
-        response.status(404).send()
-    }
 });
 
 //POST /todos
@@ -91,23 +90,12 @@ app.post('/todos',function(request,response){
     var body = _.pick(request.body,'description','completed') ;
     
     //parametro en then()
-    //1ero : success. 2do : error
-    
+    //1ero : success. 2do : error    
     db.todo.create(body).then(function(todo){
         response.json(todo.toJSON());
     },function(error){
         response.status(400).json(error);
     });
-    
-    // if(!_.isBoolean(body.completed) || !_.isString(body.description)){
-    //     return response.status(400).send();
-    // }
-
-    // body.id = nextTodoId++;
-
-    // todos.push(body);
-
-    // response.json(body);
 });
 
 //DELETE /todos/:idToDelete

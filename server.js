@@ -123,18 +123,25 @@ app.delete('/todos/:idToDelete',function(request,response) {
 //PUT /todos/:id
 app.put('/todos/:id',function(request,response) {
     var todoId = parseInt(request.params.id,10);
-    var matchedRecord = _.findWhere(todos,{id:todoId});       
-    
-    if(!matchedRecord){
-        response.status(404).send();
-    }
     var body = _.pick(request.body,'description','completed') ;
-    var validAtribute = {};
-    validAtribute.completed = body.completed;
-    validAtribute.description = body.description;
+    var attribute = {};
     
-    _.extend(matchedRecord,validAtribute);
-    response.json(matchedRecord);
+    if(body.hasOwnProperty('completed')){
+            attribute.completed = body.completed;
+    }
+    if(body.hasOwnProperty('description')){
+            attribute.description = body.description;
+    }
+    
+    db.todo.findById(todoId).then(function(todo) {
+       return todo.update(attribute);
+    },function(){
+        response.status(500).send();//findById fail
+    }).then(function(todo){
+        response.json(todo.toJSON());
+    },function(error){
+        response.status(400).json(error);
+    });
 });
 
 db.sequelize.sync().then(function() {

@@ -34,8 +34,8 @@ app.get('/About',middleware.requireAuthentication,function(req,res){
 //si no espacificamos la ruta por defecto toma index.html
 app.use(express.static(__dirname + '/public'))
 
-var todos = [];
-var nextTodoId = 1;
+// var todos = [];
+// var nextTodoId = 1;
 
 app.get('/',function(req,res) {
     res.send('TODO API Root')
@@ -47,8 +47,7 @@ app.get('/todos',function(req,res){
     var queryParams = req.query;
     var where={};
     
-    if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true')
-    {
+    if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
         where.completed = true
     }else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false' ){
         where.completed = false;
@@ -57,9 +56,10 @@ app.get('/todos',function(req,res){
     if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0){
         where.description = {
             $like : '%' + queryParams.q + '%'
-        }
+        };
     }
     db.todo.findAll(where).then(function(todos){
+        console.log(todos);
         res.json(todos);
     },function(error){
         res.status(500).send();
@@ -100,16 +100,24 @@ app.post('/todos',function(request,response){
 //DELETE /todos/:idToDelete
 app.delete('/todos/:idToDelete',function(request,response) {
     var todoId = parseInt(request.params.idToDelete,10);
-    //use without
-    var matchedTodo = _.findWhere(todos,{id:todoId});
-    
-    if(!matchedTodo){
-        response.status(404).json({"error": "no todo found with that id"});
-    }
-    else{
-         todos = _.without(todos,matchedTodo); 
-         response.json(matchedTodo); 
-    }    
+    //elimina el record
+    db.todo.destroy({
+        where:{
+            id: todoId
+        }
+    }).then(function(rowDeleteCount){
+        if(rowDeleteCount === 0){
+           response.status(404).send({
+               "error": "No todo found with id"
+           });
+        }
+        else{
+            //status 204 todo paso bien, no mandamos nada
+            response.status(204).send();
+        }
+    },function(error){
+        response.status(500).send(error)
+    });  
 });
 
 //PUT /todos/:id
